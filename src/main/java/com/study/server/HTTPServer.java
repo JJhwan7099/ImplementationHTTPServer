@@ -1,6 +1,6 @@
 package com.study.server;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -30,7 +30,36 @@ public class HTTPServer {
 
         @Override
         public void run() {
+            try (
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream())
+                );
+                OutputStream out = socket.getOutputStream();
+            ) {
+                String firstLine = in.readLine();
+                System.out.println("firstLine = " + firstLine);
 
+                String headers;
+                while(!(headers = in.readLine()).isEmpty()) {
+                    System.out.println("headers = " + headers);
+                }
+
+                String body = "<html><body><h1>Hello, Java HTTP Server!</h1></body></html>";
+
+                String response = """
+                HTTP/1.1 200 OK
+                Content-Type: text/html; charset=utf-8
+                Content-Length: %d
+    
+                %s
+                """.formatted(body.getBytes().length, body);
+
+                out.write(response.getBytes());
+                out.flush();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
